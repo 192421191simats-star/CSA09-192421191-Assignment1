@@ -1,0 +1,398 @@
+diff -ru Task11/src/parking/app/ParkingApp.java Task12/src/parking/app/ParkingApp.java
+--- Task11/src/parking/app/ParkingApp.java	2026-11-15 16:41:41.898669250 +0000
++++ Task12/src/parking/app/ParkingApp.java	2026-11-15 16:43:39.465211550 +0000
+@@ -22,17 +22,17 @@
+  *   DATE yyyy-mm-dd
+  *   FLOORS n1 n2 ...            slots on each floor
+  *   EV_SLOTS k                  last k slots of each floor have chargers
+- *   ENTER hh:mm REG TYPE CATEGORY [PASS]
++ *   ENTER hh:mm REG TYPE CATEGORY [PASS|DAYPASS]
+  *   EXIT  hh:mm REG [kWh]
+  *   RELEASE floor slot
+  *   SHOW                        print the occupancy map
+  *
+  * Compile (from Task11): javac -d out $(find src -name "*.java")
+- * Run                  : java -cp out parking.app.ParkingApp input/day_scenario.txt
++ * Run                  : java -cp out parking.app.ParkingApp input/day_scenario_v2.txt
+  */
+ public class ParkingApp {
+     public static void main(String[] args) throws IOException {
+-        Path file = Path.of(args.length > 0 ? args[0] : "input/day_scenario.txt");
++        Path file = Path.of(args.length > 0 ? args[0] : "input/day_scenario_v2.txt");
+         LocalDate date = LocalDate.now();
+         int[] floors = {20};
+         int ev = 0;
+@@ -63,6 +63,7 @@
+         System.out.print(lot.occupancyMap());
+         System.out.printf("Vehicles served: %d | still inside: %d | next ticket no: %d%n",
+                 lot.getVehiclesServed(), lot.occupied(), ParkingTicket.peekNextNumber());
++        System.out.printf("One-day pass sales: Rs %.1f%n", lot.getPassSales());
+         System.out.printf("TOTAL COLLECTION FOR %s : Rs %.1f%n", date, lot.getTotalCollection());
+     }
+ 
+@@ -73,8 +74,8 @@
+                 case "ENTER" -> {
+                     LocalDateTime at = LocalDateTime.of(date, LocalTime.parse(p[1]));
+                     Vehicle v = VehicleFactory.create(p[3], p[2]);
+-                    boolean pass = p.length > 5 && p[5].equalsIgnoreCase("PASS");
+-                    User u = VehicleFactory.createUser(p[4], "U-" + p[2], pass);
++                    String pass = p.length > 5 ? p[5] : "";
++                    User u = VehicleFactory.createUser(p[4], "U-" + p[2], pass, date);
+                     ParkingTicket t = lot.enter(v, u, at);
+                     System.out.printf("%s ENTER   %s%n", p[1], t);
+                 }
+diff -ru Task11/src/parking/app/TestRunner.java Task12/src/parking/app/TestRunner.java
+--- Task11/src/parking/app/TestRunner.java	2026-11-15 16:42:01.664076547 +0000
++++ Task12/src/parking/app/TestRunner.java	2026-11-15 16:44:01.588241774 +0000
+@@ -9,7 +9,13 @@
+ import java.util.HashSet;
+ import java.util.List;
+ import java.util.Set;
++import java.time.LocalTime;
++import java.time.YearMonth;
+ import parking.model.Car;
++import parking.model.DeliveryVan;
++import parking.model.EBike;
++import parking.model.MonthlyPass;
++import parking.model.OneDayPass;
+ import parking.model.ElectricCar;
+ import parking.model.ParkingTicket;
+ import parking.model.Receipt;
+@@ -23,6 +29,7 @@
+ import parking.service.VehicleFactory;
+ 
+ /**
++ * Task 12 regression + new-feature tests. All Task 11 tests are re-run first.
+  * Self-contained test harness (no external libraries). Prints a test table with
+  * expected and actual results and writes it to test_results.csv.
+  *
+@@ -55,9 +62,9 @@
+         check("N1", "Normal", "Visitor car 130 min", 90.0, fee(lot, new Car("TN01AB1111"), new Visitor("v"), 130, 0));
+         check("N2", "Normal", "Visitor two-wheeler 130 min", 30.0, fee(lot, new TwoWheeler("TN22CD2222"), new Visitor("v"), 130, 0));
+         check("N3", "Normal", "Visitor EV 130 min + 10 kWh", 210.0, fee(lot, new ElectricCar("TN07EV3333"), new Visitor("v"), 130, 10));
+-        check("N4", "Normal", "Student with pass, car 130 min", 0.0, fee(lot, new Car("TN10GH4444"), new Student("s", true), 130, 0));
+-        check("N5", "Normal", "Student WITHOUT pass, car 130 min", 90.0, fee(lot, new Car("TN10GH4445"), new Student("s", false), 130, 0));
+-        check("N6", "Normal", "Staff pass EV 60 min + 5 kWh (energy still paid)", 60.0, fee(lot, new ElectricCar("TN05MN5555"), new Staff("e", true), 60, 5));
++        check("N4", "Normal", "Student with pass, car 130 min", 0.0, fee(lot, new Car("TN10GH4444"), new Student("s", new MonthlyPass(YearMonth.of(2026, 11))), 130, 0));
++        check("N5", "Normal", "Student WITHOUT pass, car 130 min", 90.0, fee(lot, new Car("TN10GH4445"), new Student("s"), 130, 0));
++        check("N6", "Normal", "Staff pass EV 60 min + 5 kWh (energy still paid)", 60.0, fee(lot, new ElectricCar("TN05MN5555"), new Staff("e", new MonthlyPass(YearMonth.of(2026, 11))), 60, 5));
+         check("N7", "Normal", "Lot empty again after all exits", 0, lot.occupied());
+ 
+         // ---------------- boundary cases ----------------
+@@ -112,8 +119,8 @@
+                 attempt(() -> lot.exit("TN09DUP001", T0.plusMinutes(30), 5)));
+         check("I11", "Invalid", "After a rejected exit the car can still leave", 30.0,
+                 lot.exit("TN09DUP001", T0.plusMinutes(30), 0).total());
+-        check("I12", "Invalid", "Visitor claiming a monthly pass", "REJECTED: Visitors cannot hold a monthly pass",
+-                attempt(() -> VehicleFactory.createUser("VISITOR", "v", true)));
++        check("I12", "Invalid", "Visitor claiming a monthly pass", "REJECTED: VISITOR cannot hold a PASS",
++                attempt(() -> VehicleFactory.createUser("VISITOR", "v", "PASS", T0.toLocalDate())));
+ 
+         // ---------------- object rules ----------------
+         Set<Long> numbers = new HashSet<>();
+@@ -133,6 +140,37 @@
+         check("D1", "Scenario", "Day total (hand calc 90+180+120+360+30+240)", "Rs 1020.0",
+                 totalLine.substring(totalLine.indexOf("Rs")));
+ 
++        // ================= Task 12: new categories, day pass, 5 uneven floors =================
++        LocalDateTime d = LocalDateTime.of(2026, 11, 17, 0, 0);
++        ParkingLot big = new ParkingLot("V2", new int[]{2, 3, 4, 3, 2}, 1);
++        check("X1", "New", "5 floors with 2,3,4,3,2 slots -> capacity", 14, big.capacity());
++        check("X2", "New", "E-bike 10 min -> flat fee", 20.0, feeAt(big, new EBike("TN12EB0001"), new Visitor("v"), d.withHour(8), 10));
++        check("X3", "New", "E-bike 600 min -> still flat fee", 20.0, feeAt(big, new EBike("TN12EB0002"), new Visitor("v"), d.withHour(8), 600));
++        check("X4", "New", "E-bike 0 min -> free", 0.0, feeAt(big, new EBike("TN12EB0003"), new Visitor("v"), d.withHour(8), 0));
++        check("X5", "New", "Van 10:00-11:00 (peak) -> 2 x car rate", 60.0, feeAt(big, new DeliveryVan("TN11VN0001"), new Visitor("v"), d.withHour(10), 60));
++        check("X6", "New", "Van 06:00-08:00 (off-peak) -> car rate", 60.0, feeAt(big, new DeliveryVan("TN11VN0002"), new Visitor("v"), d.withHour(6), 120));
++        check("X7", "New", "Van 07:30-10:15: 30+30+60", 120.0, feeAt(big, new DeliveryVan("TN11VN0003"), new Visitor("v"), d.withHour(7).withMinute(30), 165));
++        check("X8", "New", "Van 16:30-18:10: 60+30", 90.0, feeAt(big, new DeliveryVan("TN11VN0004"), new Visitor("v"), d.withHour(16).withMinute(30), 100));
++        check("X9", "New", "Van hour starting exactly 17:00 is off-peak", 30.0, feeAt(big, new DeliveryVan("TN11VN0005"), new Visitor("v"), d.withHour(17), 60));
++        check("X10", "New", "Van hour starting exactly 09:00 is peak", 60.0, feeAt(big, new DeliveryVan("TN11VN0006"), new Visitor("v"), d.withHour(9), 60));
++        check("X11", "New", "Visitor + one-day pass, car 540 min", 0.0,
++                feeAt(big, new Car("TN13CR0001"), new Visitor("v", new OneDayPass(d.toLocalDate())), d.withHour(8), 540));
++        check("X12", "New", "One-day pass for ANOTHER day gives no discount", 90.0,
++                feeAt(big, new Car("TN13CR0002"), new Visitor("v", new OneDayPass(d.toLocalDate().minusDays(1))), d.withHour(8), 130));
++        check("X13", "New", "Day-pass sales counted in collection", 200.0, big.getPassSales());
++        check("X14", "New", "Student cannot buy a day pass", "REJECTED: STUDENT cannot hold a DAYPASS",
++                attempt(() -> VehicleFactory.createUser("STUDENT", "s", "DAYPASS", d.toLocalDate())));
++        check("X15", "New", "Monthly pass from last month is not valid", 90.0,
++                feeAt(big, new Car("TN13CR0003"), new Staff("e", new MonthlyPass(YearMonth.of(2026, 10))), d.withHour(8), 130));
++        check("X16", "New", "Factory creates E_BIKE and DELIVERY_VAN", "EBike[TN12EB0009] DeliveryVan[TN11VN0009]",
++                attempt(() -> VehicleFactory.create("E_BIKE", "TN12EB0009") + " " + VehicleFactory.create("DELIVERY_VAN", "TN11VN0009")));
++        VehicleFactory.register("E_SCOOTER", r -> new EBike(r));   // future type: no class edited
++        check("X17", "New", "Future type registered at run time", "EBike[TN21ES0001]",
++                attempt(() -> VehicleFactory.create("E_SCOOTER", "TN21ES0001")));
++        String v2 = runScenario("input/day_scenario_v2.txt");
++        String tot2 = v2.lines().filter(l -> l.startsWith("TOTAL")).findFirst().orElse("?");
++        check("X18", "Scenario", "New-rules day total (hand calc)", "Rs 574.0", tot2.substring(tot2.indexOf("Rs")));
++
+         // ---------------- print table ----------------
+         String fmt = "%-4s %-9s %-48s %-38s %-38s %s%n";
+         System.out.printf(fmt, "ID", "Type", "Test case", "Expected", "Actual", "Result");
+@@ -154,6 +192,12 @@
+     /** Console view only - the CSV keeps the full text. */
+     private static String cut(String s) { return s.length() <= 38 ? s : s.substring(0, 35) + "..."; }
+ 
++    private static double feeAt(ParkingLot lot, Vehicle v, parking.model.User u, LocalDateTime in, int minutes)
++            throws ParkingException {
++        lot.enter(v, u, in);
++        return lot.exit(v.getRegNo(), in.plusMinutes(minutes), 0).total();
++    }
++
+     private static String[] quote(String[] r) {
+         String[] q = new String[r.length];
+         for (int i = 0; i < r.length; i++) q[i] = "\"" + r[i].replace("\"", "'") + "\"";
+Only in Task12/src/parking/model: DeliveryVan.java
+Only in Task12/src/parking/model: EBike.java
+Only in Task12/src/parking/model: MonthlyPass.java
+Only in Task12/src/parking/model: OneDayPass.java
+Only in Task12/src/parking/model: Pass.java
+diff -ru Task11/src/parking/model/Staff.java Task12/src/parking/model/Staff.java
+--- Task11/src/parking/model/Staff.java	2026-11-15 16:39:53.933309955 +0000
++++ Task12/src/parking/model/Staff.java	2026-11-15 16:43:09.507621086 +0000
+@@ -1,7 +1,8 @@
+ package parking.model;
+ 
++/** MODIFIED (Task 12): pass handling moved to User; Staff only states which pass it may hold. */
+ public class Staff extends User {
+-    private final boolean monthlyPass;
+-    public Staff(String id, boolean monthlyPass) { super(id); this.monthlyPass = monthlyPass; }
+-    @Override public boolean hasFreeParking() { return monthlyPass; }
++    public Staff(String id) { super(id); }
++    public Staff(String id, Pass pass) { super(id); setPass(pass); }
++    @Override protected boolean mayHold(Pass p) { return p instanceof MonthlyPass; }
+ }
+diff -ru Task11/src/parking/model/Student.java Task12/src/parking/model/Student.java
+--- Task11/src/parking/model/Student.java	2026-11-15 16:39:53.931467543 +0000
++++ Task12/src/parking/model/Student.java	2026-11-15 16:43:09.506153137 +0000
+@@ -1,7 +1,8 @@
+ package parking.model;
+ 
++/** MODIFIED (Task 12): pass handling moved to User; Student only states which pass it may hold. */
+ public class Student extends User {
+-    private final boolean monthlyPass;
+-    public Student(String id, boolean monthlyPass) { super(id); this.monthlyPass = monthlyPass; }
+-    @Override public boolean hasFreeParking() { return monthlyPass; }
++    public Student(String id) { super(id); }
++    public Student(String id, Pass pass) { super(id); setPass(pass); }
++    @Override protected boolean mayHold(Pass p) { return p instanceof MonthlyPass; }
+ }
+diff -ru Task11/src/parking/model/User.java Task12/src/parking/model/User.java
+--- Task11/src/parking/model/User.java	2026-11-15 16:39:53.929742898 +0000
++++ Task12/src/parking/model/User.java	2026-11-15 16:43:09.504609879 +0000
+@@ -1,8 +1,15 @@
+ package parking.model;
+ 
+-/** A person parking on campus. */
++import java.time.LocalDate;
++
++/**
++ * A person parking on campus.
++ * MODIFIED (Task 12): free parking is now decided by an optional Pass object
++ * (composition) checked against a date, instead of a boolean in each subclass.
++ */
+ public abstract class User {
+     private final String id;
++    private Pass pass;                                       // null = no pass
+ 
+     protected User(String id) {
+         if (id == null || id.isBlank()) throw new IllegalArgumentException("User id required");
+@@ -10,13 +17,21 @@
+     }
+ 
+     public String getId() { return id; }
++    public Pass getPass() { return pass; }
++
++    /** Each user type decides which passes it may hold. */
++    protected abstract boolean mayHold(Pass p);
+ 
+-    /** True if the user parks free of charge (valid monthly pass). */
+-    public abstract boolean hasFreeParking();
++    public void setPass(Pass p) {
++        if (p != null && !mayHold(p))
++            throw new IllegalArgumentException(category() + " cannot hold a " + p.label());
++        this.pass = p;
++    }
++
++    /** True if parking on this day is free for this user. */
++    public boolean hasFreeParking(LocalDate day) { return pass != null && pass.coversParking(day); }
+ 
+     public String category() { return getClass().getSimpleName().toUpperCase(); }
+ 
+-    @Override public String toString() {
+-        return category() + (hasFreeParking() ? "(pass)" : "");
+-    }
++    @Override public String toString() { return category() + (pass != null ? "(" + pass.label().toLowerCase() + ")" : ""); }
+ }
+diff -ru Task11/src/parking/model/Visitor.java Task12/src/parking/model/Visitor.java
+--- Task11/src/parking/model/Visitor.java	2026-11-15 16:39:53.935044034 +0000
++++ Task12/src/parking/model/Visitor.java	2026-11-15 16:43:09.509060596 +0000
+@@ -1,7 +1,8 @@
+ package parking.model;
+ 
++/** MODIFIED (Task 12): a visitor may now buy a one-day pass (but never a monthly pass). */
+ public class Visitor extends User {
+     public Visitor(String id) { super(id); }
+-    /** Visitors always pay the full fee. */
+-    @Override public boolean hasFreeParking() { return false; }
++    public Visitor(String id, Pass pass) { super(id); setPass(pass); }
++    @Override protected boolean mayHold(Pass p) { return p instanceof OneDayPass; }
+ }
+Only in Task12/src/parking: pricing
+diff -ru Task11/src/parking/service/ParkingLot.java Task12/src/parking/service/ParkingLot.java
+--- Task11/src/parking/service/ParkingLot.java	2026-11-15 16:41:56.965633704 +0000
++++ Task12/src/parking/service/ParkingLot.java	2026-11-15 16:43:39.464918334 +0000
+@@ -12,6 +12,10 @@
+ /**
+  * The parking facility. Floors are a jagged array of ParkingSlot objects so each
+  * floor may have a different number of slots. Active tickets are kept in an array.
++ *
++ * MODIFIED (Task 12): (1) free parking is checked with the user's Pass for the
++ * entry date; (2) one-day pass sales are added to the day's collection.
++ * The jagged floor array needed NO change for 5 floors of different sizes.
+  */
+ public class ParkingLot {
+     private final String name;
+@@ -19,6 +23,7 @@
+     private final ParkingTicket[] active;          // open tickets, compacted 0..activeCount-1
+     private int activeCount;
+     private double totalCollection;
++    private double passSales;
+     private int vehiclesServed;
+ 
+     /**
+@@ -50,6 +55,10 @@
+         slot.park(v);
+         ParkingTicket t = new ParkingTicket(v, u, slot, at);
+         active[activeCount++] = t;
++        if (u.getPass() != null && u.getPass().price() > 0) {   // pass bought at the gate
++            passSales += u.getPass().price();
++            totalCollection += u.getPass().price();
++        }
+         return t;
+     }
+ 
+@@ -84,7 +93,8 @@
+         User u = t.getUser();
+         double parking, charging = 0;
+         try {                                              // validate everything BEFORE changing state
+-            parking = u.hasFreeParking() ? 0 : v.calculateFee(t.getEntryTime(), at);
++            boolean free = u.hasFreeParking(t.getEntryTime().toLocalDate());
++            parking = free ? 0 : v.calculateFee(t.getEntryTime(), at);
+             if (kWh > 0) {
+                 if (!(v instanceof Chargeable c))
+                     throw new ParkingException(v + " cannot be charged");
+@@ -100,8 +110,8 @@
+         totalCollection += parking + charging;
+         vehiclesServed++;
+         long minutes = Duration.between(t.getEntryTime(), at).toMinutes();
+-        return new Receipt(t.getTicketNo(), regNo, v.typeName(), u.category()
+-                + (u.hasFreeParking() ? "+PASS" : ""), t.getSlot().label(), minutes, parking, charging);
++        String who = u.category() + (u.getPass() != null ? "+" + u.getPass().label() : "");
++        return new Receipt(t.getTicketNo(), regNo, v.typeName(), who, t.getSlot().label(), minutes, parking, charging);
+     }
+ 
+     /** Frees a slot directly (attendant override). False if invalid position or already free. */
+@@ -132,6 +142,7 @@
+     public int capacity() { return active.length; }
+     public int occupied() { return activeCount; }
+     public double getTotalCollection() { return totalCollection; }
++    public double getPassSales() { return passSales; }
+     public int getVehiclesServed() { return vehiclesServed; }
+     public int floorCount() { return floors.length; }
+     public int slotsOnFloor(int f) { return floors[f].length; }
+diff -ru Task11/src/parking/service/VehicleFactory.java Task12/src/parking/service/VehicleFactory.java
+--- Task11/src/parking/service/VehicleFactory.java	2026-11-15 16:40:18.129671957 +0000
++++ Task12/src/parking/service/VehicleFactory.java	2026-11-15 16:43:39.448277899 +0000
+@@ -1,7 +1,17 @@
+ package parking.service;
+ 
++import java.time.LocalDate;
++import java.time.YearMonth;
++import java.util.LinkedHashMap;
++import java.util.Map;
++import java.util.function.Function;
+ import parking.model.Car;
++import parking.model.DeliveryVan;
++import parking.model.EBike;
+ import parking.model.ElectricCar;
++import parking.model.MonthlyPass;
++import parking.model.OneDayPass;
++import parking.model.Pass;
+ import parking.model.Staff;
+ import parking.model.Student;
+ import parking.model.TwoWheeler;
+@@ -9,31 +19,59 @@
+ import parking.model.Vehicle;
+ import parking.model.Visitor;
+ 
+-/** Converts text input into objects; the ONLY place that knows the type names. */
++/**
++ * MODIFIED (Task 12): the switch was replaced by a registry, so a FUTURE vehicle
++ * type is added with one register(...) call instead of editing this class again.
++ */
+ public final class VehicleFactory {
++    private static final Map<String, Function<String, Vehicle>> REGISTRY = new LinkedHashMap<>();
++
++    static {
++        register("TWO_WHEELER", TwoWheeler::new);
++        register("CAR", Car::new);
++        register("ELECTRIC_CAR", ElectricCar::new);
++        register("E_BIKE", EBike::new);                // new category
++        register("DELIVERY_VAN", DeliveryVan::new);    // new category
++    }
++
+     private VehicleFactory() { }
+ 
++    public static void register(String type, Function<String, Vehicle> constructor) {
++        REGISTRY.put(type.toUpperCase(), constructor);
++    }
++
+     public static Vehicle create(String type, String regNo) throws ParkingException {
++        Function<String, Vehicle> ctor = REGISTRY.get(type.toUpperCase());
++        if (ctor == null) throw new ParkingException("Unknown vehicle type: " + type);
+         try {
+-            switch (type.toUpperCase()) {
+-                case "TWO_WHEELER":  return new TwoWheeler(regNo);
+-                case "CAR":          return new Car(regNo);
+-                case "ELECTRIC_CAR": return new ElectricCar(regNo);
+-                default: throw new ParkingException("Unknown vehicle type: " + type);
+-            }
++            return ctor.apply(regNo);
+         } catch (IllegalArgumentException e) {
+             throw new ParkingException(e.getMessage());
+         }
+     }
+ 
+-    public static User createUser(String category, String id, boolean pass) throws ParkingException {
+-        switch (category.toUpperCase()) {
+-            case "STUDENT": return new Student(id, pass);
+-            case "STAFF":   return new Staff(id, pass);
+-            case "VISITOR":
+-                if (pass) throw new ParkingException("Visitors cannot hold a monthly pass");
+-                return new Visitor(id);
+-            default: throw new ParkingException("Unknown user category: " + category);
++    /**
++     * @param passCode "" (none), "PASS" (monthly) or "DAYPASS" (one-day, visitors)
++     */
++    public static User createUser(String category, String id, String passCode, LocalDate day)
++            throws ParkingException {
++        User u = switch (category.toUpperCase()) {
++            case "STUDENT" -> new Student(id);
++            case "STAFF" -> new Staff(id);
++            case "VISITOR" -> new Visitor(id);
++            default -> throw new ParkingException("Unknown user category: " + category);
++        };
++        Pass pass = switch (passCode.toUpperCase()) {
++            case "" -> null;
++            case "PASS" -> new MonthlyPass(YearMonth.from(day));
++            case "DAYPASS" -> new OneDayPass(day);
++            default -> throw new ParkingException("Unknown pass: " + passCode);
++        };
++        try {
++            u.setPass(pass);
++        } catch (IllegalArgumentException e) {
++            throw new ParkingException(e.getMessage());
+         }
++        return u;
+     }
+ }

@@ -1,0 +1,27 @@
+$ cd Task05
+$ javac -d out StaticMembersDemo.java
+$ java -cp out StaticMembersDemo input.txt
+=== Instance counter (WRONG) with two gates ===
+  CMP1001 TN01AB1111 @NORTH
+  CMP1001 TN22CD2222 @SOUTH
+  CMP1002 TN07EV3333 @NORTH
+  CMP1002 TN10GH4444 @SOUTH
+  -> CMP1001 issued twice: ticket numbers are REUSED across gates.
+
+=== static counter (CORRECT) with two gates ===
+  Ticket.issuedSoFar() before any object -> (triggers class loading)
+  [static block] Ticket class loaded, counter starts at 1001
+  issued so far = 0
+  CMP1001 TN01AB1111 @NORTH
+  CMP1002 TN22CD2222 @SOUTH
+  CMP1003 TN07EV3333 @NORTH
+  CMP1004 TN10GH4444 @SOUTH
+  north=2 south=2 campus(static)=4 issued=4
+
+=== Passing objects: reference is passed by value ===
+  after exit(keep): caller's keep still -> CMP1001 TN01AB1111 @NORTH
+  campus occupancy now 3
+
+=== Object life cycle of a ticket after the vehicle leaves ===
+  strong reference set to null -> object is now ELIGIBLE for GC
+  after System.gc() request, weak ref sees: null (collected)

@@ -1,0 +1,4 @@
+# regNo, type   (used by PolymorphismDemo; FeeDemo needs no input)
+TN01A1, TWO_WHEELER
+TN02B2, CAR
+TN03C3, ELECTRIC_CAR

@@ -1,0 +1,35 @@
+$ cd Task02
+$ javac -d out DataRepresentation.java
+$ java -cp out DataRepresentation < input.txt
+=== Facility as a jagged array String[floor][slot] ===
+  floor 0 -> slots.length = 20
+  floor 1 -> slots.length = 50
+  floor 2 -> slots.length = 100
+  total slots = 170
+
+=== Chosen data types ===
+  floor, slot number : int     (small, whole, used as array index)
+  vehicle number     : String  (alphanumeric, e.g. TN01AB1111)
+  entry/exit time    : java.time.LocalDateTime (no manual hh:mm maths)
+  duration           : int minutes (whole minutes, no rounding error)
+  fee                : double rupees computed from int hours x int rate
+  ticket number      : long    (never reused, large range)
+
+=== Casting / integer-division risk (rate Rs 30/h) ===
+  minutes  (m/60)*rate    ceil(m/60)*rate    (m+59)/60*rate
+  0        0              0.0                0.0           
+  1        0              0.0                30.0            <-- wrong fee
+  59       0              0.0                30.0            <-- wrong fee
+  60       30             30.0               30.0          
+  61       30             30.0               60.0            <-- wrong fee
+  130      60             60.0               90.0            <-- wrong fee
+  179      60             60.0               90.0            <-- wrong fee
+  130 / 60.0 = 2.1666666666666665 ; (int) of it = 2  -> narrowing cast silently truncates
+  0.1 + 0.2 = 0.30000000000000004  -> never add fractional rupees as double;
+  fees are built from int hours x int rate, so they stay exact.
+
+=== Alternative representations: locate floor 2, slot 7 ===
+  jagged     slots[2][7] = TN07EV3333
+  1-D        flat[offset[f]+s] = flat[77] = TN07EV3333
+  1-D naive  flat[f*S+s]       = flat[47] = null  <-- wrong when floors have different sizes
+  ArrayList  list.get(2)[7] = TN07EV3333

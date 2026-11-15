@@ -1,0 +1,26 @@
+$ cd Task08
+$ javac -d out FeeDemo.java PolymorphismDemo.java
+$ java -cp out PolymorphismDemo input.txt
+=== Runtime polymorphism: dynamic method dispatch trace ===
+  reg        declared  actual       calculateFee() runs      ratePerHour() runs     fee(130)
+  TN01A1     Vehicle   TwoWheeler   Vehicle.calculateFee     TwoWheeler.ratePerHour 30.0
+  TN02B2     Vehicle   Car          Vehicle.calculateFee     Car.ratePerHour        90.0
+  TN03C3     Vehicle   ElectricCar  Vehicle.calculateFee     Car.ratePerHour        90.0
+
+=== Compile-time polymorphism: overload chosen by argument types ===
+  call: calculateFee(ev, 130)
+    [compiler chose calculateFee(Vehicle,int)]
+    = Rs 90.0
+  call: calculateFee(ev, LocalTime 09:00, LocalTime 11:10)
+    [compiler chose calculateFee(Vehicle,LocalTime,LocalTime)] -> converts to minutes and delegates:
+    [compiler chose calculateFee(Vehicle,int)]
+    = Rs 90.0
+  call: calculateFee(ev, 16-Nov 22:00, 17-Nov 00:10)  (crosses midnight)
+    [compiler chose calculateFee(Vehicle,LocalDateTime,LocalDateTime)] -> converts to minutes and delegates:
+    [compiler chose calculateFee(Vehicle,int)]
+    = Rs 90.0
+
+=== Time per call over 3000000 mixed vehicles ===
+  dynamic dispatch   : 14.05 ns/call  (O(1) vtable lookup)
+  instanceof chain   : 13.29 ns/call  (up to k type tests)
+  (checksum 2520000000)

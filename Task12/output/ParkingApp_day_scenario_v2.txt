@@ -1,0 +1,39 @@
+$ cd Task12
+$ javac -d out $(find src -name "*.java")
+$ java -cp out parking.app.ParkingApp input/day_scenario_v2.txt
+Facility [2, 3, 4, 3, 2] slots/floor, 1 EV slot(s) per floor, capacity 14, date 2026-11-17
+--------------------------------------------------------------------------------------------------------
+07:30 ENTER   Ticket#1001 DeliveryVan[TN11VN1111] VISITOR F0-S0 in 07:30
+08:00 ENTER   Ticket#1002 EBike[TN12EB1212] STUDENT F1-S0 in 08:00
+08:15 ENTER   Ticket#1003 Car[TN13CR1313] VISITOR(daypass) F1-S1 in 08:15
+08:20 ENTER   Ticket#1004 ElectricCar[TN14EV1414] STAFF(pass) F0-S1(EV) in 08:20
+08:30 ENTER   Ticket#1005 TwoWheeler[TN15TW1515] VISITOR F2-S0 in 08:30
+09:00 ENTER   Ticket#1006 DeliveryVan[TN16VN1616] VISITOR F2-S1 in 09:00
+09:05 ENTER   REJECTED: VISITOR cannot hold a PASS
+09:06 ENTER   REJECTED: STUDENT cannot hold a DAYPASS
+      Occupancy now (6/14):
+    floor 0: [1111][1414]
+    floor 1: [1212][1313][ev  ]
+    floor 2: [1515][1616][.   ][ev  ]
+    floor 3: [.   ][.   ][ev  ]
+    floor 4: [.   ][ev  ]
+10:00 EXIT    Receipt#1006 TN16VN1616  DeliveryVan VISITOR      F2-S1       60 min  parking Rs   60.0  charging Rs    0.0  TOTAL Rs   60.0
+10:15 EXIT    Receipt#1001 TN11VN1111  DeliveryVan VISITOR      F0-S0      165 min  parking Rs  120.0  charging Rs    0.0  TOTAL Rs  120.0
+11:00 EXIT    Receipt#1002 TN12EB1212  EBike       STUDENT      F1-S0      180 min  parking Rs   20.0  charging Rs    0.0  TOTAL Rs   20.0
+12:30 EXIT    Receipt#1005 TN15TW1515  TwoWheeler  VISITOR      F2-S0      240 min  parking Rs   40.0  charging Rs    0.0  TOTAL Rs   40.0
+16:30 ENTER   Ticket#1007 DeliveryVan[TN17VN1717] VISITOR F0-S0 in 16:30
+17:15 EXIT    Receipt#1003 TN13CR1313  Car         VISITOR+DAYPASS F1-S1      540 min  parking Rs    0.0  charging Rs    0.0  TOTAL Rs    0.0
+17:20 EXIT    Receipt#1004 TN14EV1414  ElectricCar STAFF+PASS   F0-S1(EV)  540 min  parking Rs    0.0  charging Rs  144.0  TOTAL Rs  144.0
+18:10 EXIT    Receipt#1007 TN17VN1717  DeliveryVan VISITOR      F0-S0      100 min  parking Rs   90.0  charging Rs    0.0  TOTAL Rs   90.0
+18:20 ENTER   REJECTED: Unknown vehicle type: HOVERCRAFT
+      RELEASE floor 4 slot 2 -> REJECTED (invalid or already free)
+--------------------------------------------------------------------------------------------------------
+Occupancy at close:
+    floor 0: [.   ][ev  ]
+    floor 1: [.   ][.   ][ev  ]
+    floor 2: [.   ][.   ][.   ][ev  ]
+    floor 3: [.   ][.   ][ev  ]
+    floor 4: [.   ][ev  ]
+Vehicles served: 7 | still inside: 0 | next ticket no: 1008
+One-day pass sales: Rs 100.0
+TOTAL COLLECTION FOR 2026-11-17 : Rs 574.0

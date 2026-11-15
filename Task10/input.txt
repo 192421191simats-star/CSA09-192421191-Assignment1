@@ -1,0 +1,7 @@
+# regNo, type, floor, slot, durationMinutes
+TN01AB1111, CAR, 0, 5, 130
+TN22CD2222, TWO_WHEELER, 2, 99, 75
+TN07EF3333, CAR, 5, 0, 60
+TN10GH4444, CAR, 1, 100, 60
+TN09KL7777, CAR, 1, 3, -15
+tn09-bad, CAR, 1, 3, 15

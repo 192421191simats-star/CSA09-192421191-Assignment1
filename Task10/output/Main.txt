@@ -1,0 +1,19 @@
+$ cd Task10
+$ javac -d out $(find src -name "*.java")
+$ java -cp out parking.app.Main input.txt
+=== Updates from input file (validated by setters) ===
+  OK       Ticket#1001 Car[TN01AB1111] F0-S5 130min PAID fee Rs 90.0
+  OK       Ticket#1002 TwoWheeler[TN22CD2222] F2-S99 75min PAID fee Rs 20.0
+  REJECTED TN07EF3333, CAR, 5, 0, 60  -> Invalid floor 5 (0..4)
+  REJECTED TN10GH4444, CAR, 1, 100, 60  -> Invalid slot 100 (0..99)
+  REJECTED TN09KL7777, CAR, 1, 3, -15  -> Duration cannot be negative: -15
+  REJECTED tn09-bad, CAR, 1, 3, 15  -> Invalid registration number: tn09-bad
+
+=== Alternative: public fields, no validation ===
+  accepted floor=9 slot=-3 duration=-120 -> fee would be Rs -30  (silent corruption)
+
+=== Wrapper classes and autoboxing ===
+  Integer 100 == 100   : true   (cached -128..127, same object)
+  Integer 500 == 500   : false  (two different objects!)
+  c.equals(d)          : true   (compare values with equals)
+  int slot = (Integer)null -> NullPointerException on unboxing

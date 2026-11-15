@@ -1,0 +1,17 @@
+$ cd Task09
+$ javac -d out AbstractionDemo.java
+$ java -cp out AbstractionDemo input.txt
+=== Abstract class cannot be instantiated ===
+  'new Vehicle("TN01AB1111")' -> compile error: Vehicle is abstract
+
+=== Vehicles and users from input ===
+  TN01AB1111  CAR          VISITOR     130 min   0 kWh -> parking Rs 90.0, charging Rs 0.0, total Rs 90.0
+  TN07EV3333  ELECTRIC_CAR VISITOR     130 min  10 kWh -> parking Rs 90.0, charging Rs 120.0, total Rs 210.0  (~28 min on 22 kW)
+  TN05MN5555  ELECTRIC_CAR PASS        200 min  20 kWh -> parking Rs 0.0, charging Rs 240.0, total Rs 240.0  (~55 min on 22 kW)
+  TN10GH4444  CAR          PASS        300 min   0 kWh -> parking Rs 0.0, charging Rs 0.0, total Rs 0.0
+  tn-bad rejected: bad registration tn-bad
+  TN06PQ6666 rejected: kWh 500
+
+=== Alternative (Vehicle=interface, Chargeable=abstract class) ===
+  AltElectricCar("bad reg!") accepted -> bad reg! ; fee(130) = 90.0 ; charging(10) = 120.0
+  instanceof Car? impossible - it already used its one superclass on AbstractChargeable

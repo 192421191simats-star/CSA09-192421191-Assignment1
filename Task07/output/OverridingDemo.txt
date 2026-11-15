@@ -1,0 +1,22 @@
+$ cd Task07
+$ javac -d out OverridingDemo.java
+$ java -cp out OverridingDemo input.txt
+=== Overridden calculateFee() from input file ===
+  vehicle                       min   override   switch-alt
+  TwoWheeler[TN22CD2222]         25        0.0          0.0
+  TwoWheeler[TN22CD2223]        130       30.0         30.0
+  Car[TN01AB1111]               130       90.0         90.0
+  ElectricCar[TN07EV3333]       130      210.0        210.0
+  ElectricCar[TN07EV3334]        60       30.0         30.0
+
+=== equals() / hashCode() / toString() ===
+  a == b        : false  (different objects)
+  a.equals(b)   : true  (same registration)
+  a.equals(c)   : true  (Car vs ElectricCar, same registration)
+  hash a,b,c    : -1816603860, -1816603860, -1816603860
+  add a -> true, add b -> false, add c -> false  => set size 1 (duplicate registration blocked)
+
+=== Time per fee calculation, 3000000 calls, k = 3 types ===
+  overriding (virtual call) : 16.80 ns/call
+  switch on String type     : 7.14 ns/call
+  (checksum 3960000000)
