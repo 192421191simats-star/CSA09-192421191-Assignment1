@@ -1,0 +1,35 @@
+$ cd Task11
+$ javac -d out $(find src -name "*.java")
+$ java -cp out parking.app.ParkingApp input/day_scenario.txt
+Facility [4, 3] slots/floor, 1 EV slot(s) per floor, capacity 7, date 2026-11-16
+--------------------------------------------------------------------------------------------------------
+08:00 ENTER   Ticket#1001 Car[TN01AB1111] VISITOR F0-S0 in 08:00
+08:05 ENTER   Ticket#1002 TwoWheeler[TN22CD2222] STUDENT(pass) F0-S1 in 08:05
+08:10 ENTER   Ticket#1003 ElectricCar[TN07EV3333] STAFF(pass) F0-S3(EV) in 08:10
+08:20 ENTER   Ticket#1004 Car[TN10GH4444] VISITOR F0-S2 in 08:20
+08:30 ENTER   Ticket#1005 ElectricCar[TN05MN5555] VISITOR F1-S2(EV) in 08:30
+08:40 ENTER   Ticket#1006 TwoWheeler[TN09KL7777] VISITOR F1-S0 in 08:40
+08:45 ENTER   Ticket#1007 Car[TN33QR3030] STUDENT F1-S1 in 08:45
+08:50 ENTER   REJECTED: No suitable free slot for Car[TN44ST4040]
+09:00 ENTER   REJECTED: Duplicate registration TN01AB1111 is already inside
+09:05 ENTER   REJECTED: Unknown vehicle type: BUS
+      Occupancy now (7/7):
+    floor 0: [1111][2222][4444][3333]
+    floor 1: [7777][3030][5555]
+09:10 EXIT    Receipt#1006 TN09KL7777  TwoWheeler  VISITOR      F1-S0       30 min  parking Rs    0.0  charging Rs    0.0  TOTAL Rs    0.0
+10:10 EXIT    Receipt#1001 TN01AB1111  Car         VISITOR      F0-S0      130 min  parking Rs   90.0  charging Rs    0.0  TOTAL Rs   90.0
+10:20 EXIT    Receipt#1002 TN22CD2222  TwoWheeler  STUDENT+PASS F0-S1      135 min  parking Rs    0.0  charging Rs    0.0  TOTAL Rs    0.0
+11:10 EXIT    Receipt#1003 TN07EV3333  ElectricCar STAFF+PASS   F0-S3(EV)  180 min  parking Rs    0.0  charging Rs  180.0  TOTAL Rs  180.0
+11:30 EXIT    Receipt#1004 TN10GH4444  Car         VISITOR      F0-S2      190 min  parking Rs  120.0  charging Rs    0.0  TOTAL Rs  120.0
+12:00 ENTER   Ticket#1008 Car[TN66WX6060] VISITOR F0-S0 in 12:00
+12:30 EXIT    Receipt#1005 TN05MN5555  ElectricCar VISITOR      F1-S2(EV)  240 min  parking Rs  120.0  charging Rs  240.0  TOTAL Rs  360.0
+13:00 EXIT    Receipt#1008 TN66WX6060  Car         VISITOR      F0-S0       60 min  parking Rs   30.0  charging Rs    0.0  TOTAL Rs   30.0
+17:45 EXIT    Receipt#1007 TN33QR3030  Car         STUDENT      F1-S1      540 min  parking Rs  240.0  charging Rs    0.0  TOTAL Rs  240.0
+18:00 EXIT    REJECTED: Vehicle TN99ZZ9999 is not parked here
+      RELEASE floor 9 slot 0 -> REJECTED (invalid or already free)
+--------------------------------------------------------------------------------------------------------
+Occupancy at close:
+    floor 0: [.   ][.   ][.   ][ev  ]
+    floor 1: [.   ][.   ][ev  ]
+Vehicles served: 8 | still inside: 0 | next ticket no: 1009
+TOTAL COLLECTION FOR 2026-11-16 : Rs 1020.0

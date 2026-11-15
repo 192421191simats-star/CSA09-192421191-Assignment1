@@ -1,0 +1,19 @@
+$ cd Task03
+$ javac -d out ParkingFacility.java FreeStackFacility.java
+$ java -cp out FreeStackFacility
+Same scenario as ParkingFacility:
+[0, 0]
+[0, 1]
+[1, 0]
+null
+true false false
+[0, 1]
+
+Worst-case allocate()+release() cycle, only last slot free:
+F x S          scan (ns/op)     stack (ns/op)   
+1 x 20         19.5             50.6            
+3 x 50         65.1             74.2            
+5 x 100        209.2            22.5            
+20 x 1000      7447.1           43.2            
+scan  : allocate O(F*S), release O(1), extra space O(1)
+stack : allocate O(F),   release O(1), extra space O(F*S) ints + O(F) counters

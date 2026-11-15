@@ -1,0 +1,26 @@
+$ cd Task01
+$ javac -d out ObjectsVsParallelArrays.java
+$ java -cp out ObjectsVsParallelArrays input.txt
+=== Vehicles read from input.txt : 6 ===
+  TN01AB1111 (CAR, in 08:05, VISITOR)
+  TN22CD2222 (TWO_WHEELER, in 08:12, VISITOR)
+  TN07EV3333 (ELECTRIC_CAR, in 08:40, VISITOR)
+  TN10GH4444 (CAR, in 09:15, VISITOR)
+  TN09KL7777 (TWO_WHEELER, in 09:30, VISITOR)
+  TN05MN5555 (ELECTRIC_CAR, in 10:02, VISITOR)
+
+=== Search by registration number ===
+  TN09KL7777  object design -> TN09KL7777 (TWO_WHEELER, in 09:30, VISITOR) | parallel arrays -> TN09KL7777 TWO_WHEELER 09:30
+  TN01AB1111  object design -> TN01AB1111 (CAR, in 08:05, VISITOR) | parallel arrays -> TN01AB1111 CAR 08:05
+  KA05ZZ0000  object design -> not found | parallel arrays -> not found
+
+=== Adding a new attribute (owner category) ===
+  Object design  : 1 new field in ParkedVehicle; constructor/methods unchanged.
+  Parallel arrays: new String[6] created; every add/remove/sort
+                   routine must now update 4 arrays in step.
+
+=== Measured worst-case search, n = 200000 (avg of 50) ===
+  Object array    : 0.773 ms  -> O(n)
+  Parallel arrays : 0.654 ms  -> O(n)
+  Both are linear; the object design costs one extra reference hop
+  per comparison (array slot -> object -> regNo String).

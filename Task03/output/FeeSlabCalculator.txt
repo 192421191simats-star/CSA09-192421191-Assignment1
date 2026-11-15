@@ -1,0 +1,21 @@
+$ cd Task03
+$ javac -d out FeeSlabCalculator.java
+$ java -cp out FeeSlabCalculator input.txt
+TYPE            MINUTES  FEE(Rs)
+CAR                   0        0
+CAR                   1       30
+CAR                  60       30
+CAR                  61       60
+CAR                 130       90
+CAR                 420      210
+CAR                 421      240
+CAR                 480      240
+CAR                 600      240
+CAR                1440      240
+CAR                1500      270
+TWO_WHEELER         130       30
+ELECTRIC_CAR        130       90
+BUS                  30   REJECTED: Unknown vehicle type: BUS
+CAR                  -5   REJECTED: Negative duration: -5
+TWO_WHEELER          30        0
+TWO_WHEELER          31       10

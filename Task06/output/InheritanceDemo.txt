@@ -1,0 +1,28 @@
+$ cd Task06
+$ javac -d out InheritanceDemo.java
+$ java -cp out InheritanceDemo input.txt
+=== Constructor execution order: new ElectricCar("TN07EV3333", 40) ===
+    1. Vehicle instance initialiser block
+    2. Vehicle(String) constructor body, regNo=TN07EV3333
+    3. Car instance initialiser block
+    4. Car(String,int) constructor body, seats=5
+    5. ElectricCar instance initialiser block
+    6. ElectricCar(String,int) constructor body, battery=40
+  -> ElectricCar TN07EV3333 @Rs30/h, seats=5, battery=40kWh (reg via super: TN07EV3333)
+
+=== Vehicles from input file ===
+  Car TN01AB1111 @Rs30/h, seats=5 | is-a Vehicle? true | is-a Car? true
+  TwoWheeler TN22CD2222 @Rs10/h | is-a Vehicle? true | is-a Car? false
+  ElectricCar TN07EV3333 @Rs30/h, seats=5, battery=40kWh (reg via super: TN07EV3333) | is-a Vehicle? true | is-a Car? true
+  TN44XY9999 rejected: unknown type BUS
+
+=== User hierarchy ===
+  Student(S101) free=true
+  Staff(E202) free=true
+  Student(S102) free=false
+  Visitor(V303) free=false
+
+=== Composition alternative: Vehicle has-a VehicleType ===
+  TN02B2 CAR 130 min -> Rs 90
+  TN08EB8 E_BIKE 130 min -> Rs 15
+  Many vehicles share ONE VehicleType object (flyweight): extra space = 1 reference/vehicle.

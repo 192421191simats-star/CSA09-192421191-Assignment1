@@ -1,0 +1,33 @@
+digraph G { rankdir=BT; graph [fontname="Helvetica", fontsize=11, nodesep=0.35, ranksep=0.55, splines=ortho];
+node [shape=plaintext, fontname="Helvetica", fontsize=10]; edge [fontname="Helvetica", fontsize=9];
+Vehicle [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#EEF3FF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><I>&laquo;abstract&raquo;</I></TD></TR><TR><TD BORDER="0"><I>Vehicle</I></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT">- regNo : String {final}<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"># Vehicle(regNo : String)<BR ALIGN="LEFT"/># ratePerHour() : int {abstract}<BR ALIGN="LEFT"/>+ getRegNo() : String<BR ALIGN="LEFT"/>+ describe() : String<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+TwoWheeler [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>TwoWheeler</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT"> </TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ TwoWheeler(regNo)<BR ALIGN="LEFT"/># ratePerHour() : int  = 10<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Car [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>Car</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT"># seats : int {final}<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ Car(regNo)<BR ALIGN="LEFT"/>+ Car(regNo, seats)<BR ALIGN="LEFT"/># ratePerHour() : int  = 30<BR ALIGN="LEFT"/>+ describe() : String<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+ElectricCar [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>ElectricCar</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT">- batteryKWh : int {final}<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ ElectricCar(regNo, batteryKWh)<BR ALIGN="LEFT"/>+ describe() : String<BR ALIGN="LEFT"/>+ chargingFee(kWh) : double<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Chargeable [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFF6E0">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><I>&laquo;interface&raquo;</I></TD></TR><TR><TD BORDER="0"><I>Chargeable</I></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT">RATE_PER_KWH = 12.0<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ chargingFee(kWh : int) : double<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+User [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#EEF3FF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><I>&laquo;abstract&raquo;</I></TD></TR><TR><TD BORDER="0"><I>User</I></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT"># id : String {final}<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT"># User(id)<BR ALIGN="LEFT"/>+ parksFree() : boolean {abstract}<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Student [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>Student</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT">- monthlyPass : boolean<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ parksFree() : boolean<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Staff [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>Staff</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT">- monthlyPass : boolean<BR ALIGN="LEFT"/></TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ parksFree() : boolean<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+Visitor [label=<<TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4" BGCOLOR="#FFFFFF">
+<TR><TD><TABLE BORDER="0" CELLSPACING="0"><TR><TD BORDER="0"><B>Visitor</B></TD></TR></TABLE></TD></TR>
+<TR><TD ALIGN="LEFT" BALIGN="LEFT"> </TD></TR><TR><TD ALIGN="LEFT" BALIGN="LEFT">+ parksFree() : boolean  = false<BR ALIGN="LEFT"/></TD></TR></TABLE>>];
+TwoWheeler -> Vehicle [arrowhead=empty]; Car -> Vehicle [arrowhead=empty]; ElectricCar -> Car [arrowhead=empty]; ElectricCar -> Chargeable [arrowhead=empty, style=dashed];
+Student -> User [arrowhead=empty]; Staff -> User [arrowhead=empty]; Visitor -> User [arrowhead=empty];
+label="Task 6 - Inheritance hierarchy (hierarchical + multilevel; ElectricCar also realises Chargeable)"; labelloc=t;
+}

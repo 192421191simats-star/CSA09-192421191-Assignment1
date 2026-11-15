@@ -1,0 +1,44 @@
+$ cd Task11
+$ javac -d out $(find src -name "*.java")
+$ java -cp out parking.app.TestRunner
+ID   Type      Test case                                        Expected                               Actual                                 Result
+--------------------------------------------------------------------------------------------------------------------------------------------------
+N1   Normal    Visitor car 130 min                              90.0                                   90.0                                   PASS
+N2   Normal    Visitor two-wheeler 130 min                      30.0                                   30.0                                   PASS
+N3   Normal    Visitor EV 130 min + 10 kWh                      210.0                                  210.0                                  PASS
+N4   Normal    Student with pass, car 130 min                   0.0                                    0.0                                    PASS
+N5   Normal    Student WITHOUT pass, car 130 min                90.0                                   90.0                                   PASS
+N6   Normal    Staff pass EV 60 min + 5 kWh (energy still paid) 60.0                                   60.0                                   PASS
+N7   Normal    Lot empty again after all exits                  0                                      0                                      PASS
+B1   Boundary  Zero-minute stay, car                            0.0                                    0.0                                    PASS
+B2   Boundary  Exactly 60 min (slab edge), car                  30.0                                   30.0                                   PASS
+B3   Boundary  61 min -> 2nd hour starts, car                   60.0                                   60.0                                   PASS
+B4   Boundary  Two-wheeler exactly 30 min (grace edge)          0.0                                    0.0                                    PASS
+B5   Boundary  Two-wheeler 31 min                               10.0                                   10.0                                   PASS
+B6   Boundary  Car 480 min = daily maximum                      240.0                                  240.0                                  PASS
+B7   Boundary  Car 600 min capped at daily max                  240.0                                  240.0                                  PASS
+B8   Boundary  Car 1500 min = 1 day + 1 h                       270.0                                  270.0                                  PASS
+B9   Boundary  Last free slot is allocated                      F1-S0                                  F1-S0                                  PASS
+B10  Boundary  Entry when full is rejected                      REJECTED: No suitable free slot for... REJECTED: No suitable free slot for... PASS
+B11  Boundary  Freed slot is reused                             F0-S1                                  F0-S1                                  PASS
+B12  Boundary  EV is placed in charging slot                    F0-S2(EV)                              F0-S2(EV)                              PASS
+B13  Boundary  Second EV falls back to normal slot              F0-S0                                  F0-S0                                  PASS
+B14  Boundary  Car never takes a free charging slot             REJECTED: No suitable free slot for... REJECTED: No suitable free slot for... PASS
+I1   Invalid   Unknown vehicle type BUS                         REJECTED: Unknown vehicle type: BUS    REJECTED: Unknown vehicle type: BUS    PASS
+I2   Invalid   Duplicate registration on entry                  REJECTED: Duplicate registration TN... REJECTED: Duplicate registration TN... PASS
+I3   Invalid   Release invalid floor 9                          false                                  false                                  PASS
+I4   Invalid   Release invalid slot -1                          false                                  false                                  PASS
+I5   Invalid   Release an already free slot                     false                                  false                                  PASS
+I6   Invalid   Exit of a vehicle not parked                     REJECTED: Vehicle TN99ZZ9999 is not... REJECTED: Vehicle TN99ZZ9999 is not... PASS
+I7   Invalid   Exit time before entry time                      REJECTED: Exit time before entry time  REJECTED: Exit time before entry time  PASS
+I8   Invalid   Malformed registration number                    REJECTED: Invalid registration numb... REJECTED: Invalid registration numb... PASS
+I9   Invalid   Negative duration passed to calculateFee         REJECTED: Negative duration: -5        REJECTED: Negative duration: -5        PASS
+I10  Invalid   Charging requested for a petrol car              REJECTED: Car[TN09DUP001] cannot be... REJECTED: Car[TN09DUP001] cannot be... PASS
+I11  Invalid   After a rejected exit the car can still leave    30.0                                   30.0                                   PASS
+I12  Invalid   Visitor claiming a monthly pass                  REJECTED: Visitors cannot hold a mo... REJECTED: Visitors cannot hold a mo... PASS
+O1   Rule      200 tickets in reused slot: all numbers unique   200                                    200                                    PASS
+O2   Rule      Car vs ElectricCar same reg are equal()          true                                   true                                   PASS
+O3   Rule      equal vehicles have equal hashCode               true                                   true                                   PASS
+D1   Scenario  Day total (hand calc 90+180+120+360+30+240)      Rs 1020.0                              Rs 1020.0                              PASS
+--------------------------------------------------------------------------------------------------------------------------------------------------
+37 / 37 tests passed

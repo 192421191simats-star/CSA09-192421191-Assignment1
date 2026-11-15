@@ -1,0 +1,12 @@
+$ cd Task11
+$ javac -d out $(find src -name "*.java")
+$ java -cp out parking.app.TicketStoreBenchmark
+n        array (ns/find)  ArrayList (ns)   HashMap (ns)    
+100      271.7            283.7            44.8            
+500      1304.8           1358.0           49.9            
+1000     2539.8           2573.4           78.8            
+10000    21045.4          20614.2          224.0           
+100000   441594.6         351301.4         74.9            
+array / ArrayList : O(n) linear search on regNo; HashMap : O(1) average
+space: array n refs (fixed capacity); ArrayList n refs + up to 50% slack;
+       HashMap n entries (~32-48 bytes each) + bucket table -> roughly 3-4x the array
