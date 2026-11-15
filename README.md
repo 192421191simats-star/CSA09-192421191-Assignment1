@@ -4,8 +4,8 @@ Design, implement and validate an object-oriented model for a campus smart-parki
 
 | | |
 |---|---|
-| **Name** | `<YOUR NAME>` |
-| **Register Number** | `<REGISTER NUMBER>` |
+| **Name** | `Prabhenjan Srikanth R` |
+| **Register Number** | `192421191` |
 | **Java version** | OpenJDK 21 (any JDK 17 or newer works – the code uses records, switch expressions and `instanceof` patterns) |
 | **Report** | [`report/Assignment1_Report.pdf`](report/Assignment1_Report.pdf) (also `.docx` and `.md`) |
 
